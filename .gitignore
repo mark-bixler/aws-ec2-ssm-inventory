@@ -1,0 +1,9 @@
+.DS_Store
+NOTES.txt
+.vscode
+logs
+output
+webapp.py
+static
+templates
+

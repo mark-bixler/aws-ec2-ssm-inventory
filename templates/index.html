@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    </head>
+    <body>
+        <h1>MB AWS EC2 Inventory</h1>
+        <table border=1 cellpadding=7>
+            <tr>
+                <th>ResourceId</th>
+                <th>ComputerName</th>
+                <th>Account</th>
+                <th>Region</th>
+                <th>InstanceId</th>
+                <th>IpAddress</th>
+                <th>PlatformType</th>
+                <th>PlatformName</th>
+                <th>SSM Managed</th>
+                <th>Compliant</th>
+            </tr>
+            {% for obj in object_list %}
+            <tr>
+                <td>{{ obj.ResourceId }}</td>
+                <td>{{ obj.ComputerName }}</td>
+                <td>{{ obj.Account }}</td>
+                <td>{{ obj.Region }}</td>
+                <td>{{ obj.InstanceId }}</td>
+                <td>{{ obj.IpAddress }}</td>
+                <td>{{ obj.PlatformType }}</td>
+                <td>{{ obj.PlatformName }}</td>
+                <td>{{ obj.SSM_Managed }}</td>
+                <td>{{ obj.Compliant }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

@@ -1,0 +1,58 @@
+# Set the format of the build name for each execution of this pipeline
+name: $(BuildDefinitionName)_$(SourceBranchName)$(Rev:.r)
+
+# Only run this pipeline when master branch is updated or global config repo is updated
+trigger:
+    - master
+
+variables:
+  agent_pool: 'aws-agent-master' # <-- My agent pool has docker installed
+  aws_region: 'us-west-2' # <-- Example Region
+  repository: $(Build.Repository.Name)
+
+stages:
+  - stage: Build_Release
+    jobs:
+      - job: build_release
+        pool: $(agent_pool)
+        variables:
+          - group: aws_iam_sa_inventory #<-- Libary Group inside ADO
+          - name: aws_role
+            value: 'arn:aws:iam::<awsaccountid>:role/<awsrole>' # <-- Modify account ID and Role
+        steps:
+          - task: Docker@2
+            inputs:
+              repository: '$(repository)'
+              command: 'build'
+              Dockerfile: '**/Dockerfile'       
+          # Download Cloud Eng Templates
+          # Clones Repository to Agent
+          - script: 'git clone https://<repository_of_choice>aws-ec2-ssm-inventory $(System.ArtifactsDirectory)/'
+            displayName: 'Clone Pipeline Templates'
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          # Create Credentials File for Multiple Profies
+          - task: Bash@3
+            displayName: AWS IAM - Credentials File
+            inputs:
+              targetType: filePath
+              filePath: '$(System.ArtifactsDirectory)/aws_create_creds.sh'
+              arguments: '"$(System.ArtifactsDirectory)" "$(sa_inventory_key_id)" "$(sa_inventory_secret_key)"'
+          # Run Python App
+          - task: Docker@2
+            displayName: Run Python App
+            inputs:
+              command: run
+              arguments: -v $(System.ArtifactsDirectory)/credentials:/root/.aws/credentials:ro $(repository):$(Build.BuildId) python app.py
+          # Publish CSV File
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Inventory List
+            inputs:
+              path: $(Build.SourcesDirectory)/output/
+              artifact: Inventory
+          # Publish App Log File
+          - task: PublishPipelineArtifact@1
+            displayName: Publish App Logs
+            inputs:
+              path: $(Build.SourcesDirectory)/logs
+              artifact: Logs
