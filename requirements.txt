@@ -23,7 +23,7 @@ Office365-REST-Python-Client==2.1.5
 pandas==0.25.3
 pandas-datareader==0.8.1
 pycparser==2.19
-PyJWT==1.7.1
+PyJWT==2.4.0
 pylint==2.4.4
 python-dateutil==2.8.1
 pytz==2019.3
